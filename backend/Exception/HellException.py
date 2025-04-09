@@ -1,0 +1,2 @@
+class HellException(Exception):
+    pass
