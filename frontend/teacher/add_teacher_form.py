@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk  # Importar ttk para Combobox
 from datetime import datetime
+
 from backend.Exception.HellException import HellException
 from backend.controller.teacher_controller import TeacherController
 from backend.controller.time_controller import TimeController
@@ -18,7 +20,7 @@ class AddTeacherForm:
         # Validate id method
         id_validator = (self.window.register(self.validate_id), "%P")
 
-        # id
+        # ID
         tk.Label(self.window, text="Registro de Personal").pack(pady=(10, 0))
         self.id_entry = tk.Entry(self.window, validate="key", validatecommand=id_validator)
         self.id_entry.pack(pady=5)
@@ -30,23 +32,21 @@ class AddTeacherForm:
 
         # Entry hour
         tk.Label(self.window, text="Hora de Entrada").pack(pady=(10, 0))
-        self.entry_hour_var = tk.StringVar(value="")
-        self.entry_hour_menu = tk.OptionMenu(self.window, self.entry_hour_var, *self.available_times)
-        self.entry_hour_menu.pack(pady=5)
+        self.entry_hour_var = tk.StringVar()
+        self.entry_hour_combo = ttk.Combobox(self.window, textvariable=self.entry_hour_var, values=self.available_times, state="readonly")
+        self.entry_hour_combo.pack(pady=5)
 
         # Departure hour
         tk.Label(self.window, text="Hora de Salida").pack(pady=(10, 0))
-        self.departure_hour_var = tk.StringVar(value="")
-        self.departure_hour_menu = tk.OptionMenu(self.window, self.departure_hour_var, *self.available_times)
-        self.departure_hour_menu.pack(pady=5)
+        self.departure_hour_var = tk.StringVar()
+        self.departure_hour_combo = ttk.Combobox(self.window, textvariable=self.departure_hour_var, values=self.available_times, state="readonly")
+        self.departure_hour_combo.pack(pady=5)
 
         # Buttons
         buttons_frame = tk.Frame(self.window)
         buttons_frame.pack(pady=20)
-        save_button = tk.Button(buttons_frame, text="Guardar", width=12, command=self.save_teacher)
-        save_button.grid(row=0, column=0, padx=10)
-        cancel_button = tk.Button(buttons_frame, text="Cancelar", width=12, command=self.window.destroy)
-        cancel_button.grid(row=0, column=1, padx=10)
+        tk.Button(buttons_frame, text="Guardar", width=12, command=self.save_teacher).grid(row=0, column=0, padx=10)
+        tk.Button(buttons_frame, text="Cancelar", width=12, command=self.window.destroy).grid(row=0, column=1, padx=10)
 
         # Error label
         self.error_label = tk.Label(self.window, text="", fg="red")
@@ -74,7 +74,6 @@ class AddTeacherForm:
         start_hour = self.entry_hour_var.get()
         end_hour = self.departure_hour_var.get()
 
-        # Verify required fields
         if not name:
             self.show_error("Nombre del Docente es obligatorio")
             return
@@ -88,7 +87,6 @@ class AddTeacherForm:
             self.show_error("Debe seleccionar una Hora de Salida")
             return
 
-        # Verify start hour is minor than departure hour
         fmt = "%H:%M"
         if datetime.strptime(start_hour, fmt) >= datetime.strptime(end_hour, fmt):
             self.show_error("La hora de entrada debe ser menor que la hora de salida")
@@ -100,7 +98,3 @@ class AddTeacherForm:
             self.window.destroy()
         except HellException as e:
             self.show_error(str(e))
-
-
-
-

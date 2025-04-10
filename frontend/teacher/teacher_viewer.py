@@ -110,14 +110,16 @@ class TeacherViewer:
         # Entry hour
         tk.Label(edit_win, text="Hora de Entrada").pack(pady=(10, 0))
         entry_hour_var = tk.StringVar(value=teacher.entry_time.strftime("%H:%M"))
-        entry_hour_menu = tk.OptionMenu(edit_win, entry_hour_var, *self.available_times)
-        entry_hour_menu.pack(pady=5)
+        entry_hour_combo = ttk.Combobox(edit_win, textvariable=entry_hour_var, values=self.available_times,
+                                        state="readonly")
+        entry_hour_combo.pack(pady=5)
 
         # Departure hour
         tk.Label(edit_win, text="Hora de Salida").pack(pady=(10, 0))
         departure_hour_var = tk.StringVar(value=teacher.departure_time.strftime("%H:%M"))
-        departure_hour_menu = tk.OptionMenu(edit_win, departure_hour_var, *self.available_times)
-        departure_hour_menu.pack(pady=5)
+        departure_hour_combo = ttk.Combobox(edit_win, textvariable=departure_hour_var, values=self.available_times,
+                                            state="readonly")
+        departure_hour_combo.pack(pady=5)
 
         # Error label
         error_label = tk.Label(edit_win, text="", fg="red")
@@ -129,6 +131,7 @@ class TeacherViewer:
             start_hour = entry_hour_var.get()
             end_hour = departure_hour_var.get()
             fmt = "%H:%M"
+
             if not name:
                 error_label.config(text="Nombre del Docente es obligatorio")
                 return
@@ -141,10 +144,15 @@ class TeacherViewer:
             if datetime.strptime(start_hour, fmt) >= datetime.strptime(end_hour, fmt):
                 error_label.config(text="La hora de entrada debe ser menor que la de salida")
                 return
-            if teacher.name == name and teacher.entry_time.strftime(fmt) == start_hour and teacher.departure_time.strftime(fmt) == end_hour:
+            if (
+                    teacher.name == name and
+                    teacher.entry_time.strftime(fmt) == start_hour and
+                    teacher.departure_time.strftime(fmt) == end_hour
+            ):
                 self.show_temporal_message("Docente editado.", color="green")
                 edit_win.destroy()
                 return
+
             self.teacher_controller.update_teacher(
                 teacher.id,
                 name,
@@ -158,10 +166,8 @@ class TeacherViewer:
         # Buttons
         buttons_frame = tk.Frame(edit_win)
         buttons_frame.pack(pady=20)
-        save_button = tk.Button(buttons_frame, text="Guardar", width=12, command=update_teacher)
-        save_button.grid(row=0, column=0, padx=10)
-        cancel_button = tk.Button(buttons_frame, text="Cancelar", width=12, command=edit_win.destroy)
-        cancel_button.grid(row=0, column=1, padx=10)
+        tk.Button(buttons_frame, text="Guardar", width=12, command=update_teacher).grid(row=0, column=0, padx=10)
+        tk.Button(buttons_frame, text="Cancelar", width=12, command=edit_win.destroy).grid(row=0, column=1, padx=10)
 
     def refresh_table(self):
         if not self.tree:

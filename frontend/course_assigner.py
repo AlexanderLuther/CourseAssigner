@@ -2,7 +2,8 @@ import tkinter as tk
 from frontend.classroom.add_classroom_form import AddClassroomForm
 from frontend.classroom.classroom_viewer import ClassroomViewer
 from frontend.course.add_course_form import AddCourseForm
-from frontend.teacher.TeacherViewer import TeacherViewer
+from frontend.course.course_viewer import CourseViewer
+from frontend.teacher.teacher_viewer import TeacherViewer
 from frontend.teacher.add_teacher_form import AddTeacherForm
 
 class CourseAssigner:
@@ -27,7 +28,7 @@ class CourseAssigner:
         # Courses Menu
         courses_menu = tk.Menu(menu_bar, tearoff=0)
         courses_menu.add_command(label="Nuevo Curso", command=lambda: AddCourseForm(self.parent))
-        courses_menu.add_command(label="Ver Cursos", command=lambda: self.nueva_ventana("Cursos"))
+        courses_menu.add_command(label="Ver Cursos", command=lambda: CourseViewer(self.parent))
         menu_bar.add_cascade(label="Cursos", menu=courses_menu)
 
         # Teacher Menu

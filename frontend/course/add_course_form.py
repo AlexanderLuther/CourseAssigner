@@ -1,13 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
-
+from tkinter import ttk
 from backend.Exception.HellException import HellException
 from backend.controller.career_controller import CareerController
-from backend.controller.course_controller import CourseController  # Asegúrate de tenerlo
+from backend.controller.course_controller import CourseController
 from backend.controller.course_type_controller import CourseTypeController
 from backend.controller.section_controller import SectionController
 from backend.controller.semester_controller import SemesterController
-
 
 class AddCourseForm:
     def __init__(self, parent):
@@ -26,79 +25,69 @@ class AddCourseForm:
     def get_sections(self):
         section_controller = SectionController()
         raw_sections = section_controller.get_all_sections()
-        self.section_map = {}
-        for section in raw_sections:
-            self.section_map[section.description] = section.id
+        self.section_map = {section.description: section.id for section in raw_sections}
         return list(self.section_map.keys())
 
     def get_careers(self):
         career_controller = CareerController()
         raw_careers = career_controller.get_all_careers()
-        self.career_map = {}
-        for career in raw_careers:
-            self.career_map[career.description] = career.id
+        self.career_map = {career.description: career.id for career in raw_careers}
         return list(self.career_map.keys())
 
     def get_semesters(self):
         semester_controller = SemesterController()
         raw_semesters = semester_controller.get_all_semesters()
-        self.semester_map = {}
-        for semester in raw_semesters:
-            self.semester_map[semester.description] = semester.id
+        self.semester_map = {semester.description: semester.id for semester in raw_semesters}
         return list(self.semester_map.keys())
 
     def get_course_types(self):
         course_type_controller = CourseTypeController()
         raw_types = course_type_controller.get_all_course_types()
-        self.type_map = {}
-        for type in raw_types:
-            self.type_map[type.description] = type.id
+        self.type_map = {type.description: type.id for type in raw_types}
         return list(self.type_map.keys())
 
     def validate_id(self, new_value):
         return new_value.isdigit() and len(new_value) <= 10 or new_value == ""
 
     def create_form(self):
-        # Validate id method
         id_validator = (self.window.register(self.validate_id), "%P")
 
-        # Course name
         tk.Label(self.window, text="Nombre del Curso").pack(pady=(10, 0))
         self.name_entry = tk.Entry(self.window)
         self.name_entry.pack(pady=5)
 
-        # Course code
         tk.Label(self.window, text="Código del Curso").pack(pady=(10, 0))
         self.code_entry = tk.Entry(self.window, validate="key", validatecommand=id_validator)
         self.code_entry.pack(pady=5)
 
-        # Career
+        # Careers
         tk.Label(self.window, text="Carrera").pack(pady=(10, 0))
-        self.career_var = tk.StringVar(value="")
-        tk.OptionMenu(self.window, self.career_var, *self.career_options).pack(pady=5)
+        self.career_var = tk.StringVar()
+        self.career_combo = ttk.Combobox(self.window, textvariable=self.career_var, values=self.career_options, state="readonly")
+        self.career_combo.pack(pady=5)
 
-        # Semester
+        # Semesters
         tk.Label(self.window, text="Semestre").pack(pady=(10, 0))
-        self.semester_var = tk.StringVar(value="")
-        tk.OptionMenu(self.window, self.semester_var, *self.semester_options).pack(pady=5)
+        self.semester_var = tk.StringVar()
+        self.semester_combo = ttk.Combobox(self.window, textvariable=self.semester_var, values=self.semester_options, state="readonly")
+        self.semester_combo.pack(pady=5)
 
-        # Section
+        # Sections
         tk.Label(self.window, text="Seccion").pack(pady=(10, 0))
-        self.section_var = tk.StringVar(value="")
-        tk.OptionMenu(self.window, self.section_var, *self.section_options).pack(pady=5)
+        self.section_var = tk.StringVar()
+        self.section_combo = ttk.Combobox(self.window, textvariable=self.section_var, values=self.section_options, state="readonly")
+        self.section_combo.pack(pady=5)
 
-        # Course type
+        # Course types
         tk.Label(self.window, text="Tipo de Curso").pack(pady=(10, 0))
-        self.type_var = tk.StringVar(value="")
-        tk.OptionMenu(self.window, self.type_var, *self.course_type_options).pack(pady=5)
+        self.type_var = tk.StringVar()
+        self.type_combo = ttk.Combobox(self.window, textvariable=self.type_var, values=self.course_type_options, state="readonly")
+        self.type_combo.pack(pady=5)
 
-        # Buttons
         buttons_frame = tk.Frame(self.window)
         buttons_frame.pack(pady=20)
-        save_button = tk.Button(buttons_frame, text="Guardar", width=12, command=self.save_course)
-        save_button.grid(row=0, column=0, padx=10)
-        cancel_button = tk.Button(buttons_frame, text="Cancelar", width=12, command=self.window.destroy)
-        cancel_button.grid(row=0, column=1, padx=10)
+        tk.Button(buttons_frame, text="Guardar", width=12, command=self.save_course).grid(row=0, column=0, padx=10)
+        tk.Button(buttons_frame, text="Cancelar", width=12, command=self.window.destroy).grid(row=0, column=1, padx=10)
 
     def show_error(self, message):
         self.error_label.config(text=message)
