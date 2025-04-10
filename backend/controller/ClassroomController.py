@@ -10,7 +10,7 @@ class ClassroomController:
         classroom = self.classroom_query.find_classroom_by_description(description)
         if classroom:
             raise HellException(f"El salon {description} ya se encuentra registrado.")
-        self.classroom_query.save_classroom(ClassroomModel(description))
+        self.classroom_query.save_classroom(ClassroomModel(description=description))
 
     def update_classroom(self, id: int, description: str):
         classroom = self.classroom_query.find_classroom_by_description(description)

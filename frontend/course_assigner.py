@@ -1,6 +1,8 @@
 import tkinter as tk
 from frontend.classroom.add_classroom_form import AddClassroomForm
 from frontend.classroom.classroom_viewer import ClassroomViewer
+from frontend.teacher.TeacherViewer import TeacherViewer
+from frontend.teacher.add_teacher_form import AddTeacherForm
 
 class CourseAssigner:
     def __init__(self, parent):
@@ -23,9 +25,9 @@ class CourseAssigner:
 
         # Teacher Menu
         teacher_menu = tk.Menu(menu_bar, tearoff=0)
-        teacher_menu.add_command(label="Nuevo Docente", command=lambda: self.nueva_ventana("Cursos"))
+        teacher_menu.add_command(label="Nuevo Docente", command=lambda: AddTeacherForm(self.parent))
         teacher_menu.add_command(label="Importar Docentes", command=lambda: self.nueva_ventana("Cursos"))
-        teacher_menu.add_command(label="Ver Docentes", command=lambda: self.nueva_ventana("Cursos"))
+        teacher_menu.add_command(label="Ver Docentes", command=lambda: TeacherViewer(self.parent))
         menu_bar.add_cascade(label="Docentes", menu=teacher_menu)
 
         # Classroom Menu

@@ -12,14 +12,14 @@ class ClassroomViewer:
         self.window.geometry("500x500")
         self.tree = None
         self.classrooms = []
+        self.message_label = None
         self.init_table()
         self.add_action_buttons()
 
     def init_table(self):
         self.classrooms = self.classroom_controller.get_all_classrooms()
         if not self.classrooms:
-            label = tk.Label(self.window, text="No hay salones registrados.", font=("Arial", 12))
-            label.pack(pady=20)
+            self.show_temporal_message("No hay salones registrados.", color="red")
             return
 
         self.tree = ttk.Treeview(self.window, columns=("ID", "Descripcion"), show="headings", height=10)
@@ -28,6 +28,7 @@ class ClassroomViewer:
         self.tree.column("ID", width=50, anchor="center")
         self.tree.column("Descripcion", width=300, anchor="w")
         self.tree.pack(pady=20, fill="both", expand=True)
+
         for classroom in self.classrooms:
             self.tree.insert("", "end", values=(classroom.id, classroom.description))
 
@@ -54,9 +55,12 @@ class ClassroomViewer:
         classroom = self.get_selected_classroom()
         if not classroom:
             return
-        self.classroom_controller.delete_classroom(classroom.id)
-        self.refresh_table()
-        self.show_temporal_message(f"Salón {classroom.description} eliminado correctamente.", color="green")
+        try:
+            self.classroom_controller.delete_classroom(classroom.id)
+            self.refresh_table()
+            self.show_temporal_message(f"Salón '{classroom.description}' eliminado correctamente.", color="green")
+        except HellException as e:
+            self.show_temporal_message(str(e), color="red")
 
     def edit_action(self):
         classroom = self.get_selected_classroom()
@@ -69,13 +73,12 @@ class ClassroomViewer:
         edit_win.title("Editar salón")
         edit_win.geometry("350x200")
 
-        # Description label
-        label = tk.Label(edit_win, text="Descripcion", font=("Arial", 12))
+        label = tk.Label(edit_win, text="Descripción", font=("Arial", 12))
         label.pack(pady=10)
 
-        # Error label
-        self.error_label = tk.Label(self.window, text="", fg="red", font=("Arial", 10))
-        self.error_label.pack()
+        error_label = tk.Label(edit_win, text="", fg="red", font=("Arial", 10))
+        error_label.pack()
+
         description_entry = tk.Entry(edit_win, width=40)
         description_entry.insert(0, classroom.description)
         description_entry.pack(pady=10)
@@ -83,7 +86,7 @@ class ClassroomViewer:
         def save_changes():
             new_description = description_entry.get().strip()
             if not new_description:
-                self.show_temporal_message("Descripcion de salon requerida.", color="red")
+                error_label.config(text="Descripción de salón requerida.")
                 return
             if new_description == classroom.description:
                 edit_win.destroy()
@@ -94,23 +97,28 @@ class ClassroomViewer:
                 edit_win.destroy()
                 self.refresh_table()
             except HellException as e:
-                self.show_temporal_message(str(e), color="red")
+                error_label.config(text=str(e))
 
         save_button = tk.Button(edit_win, text="Guardar cambios", command=save_changes)
         save_button.pack(pady=10)
 
     def refresh_table(self):
+        if not self.tree:
+            return
+
         self.tree.delete(*self.tree.get_children())
         self.classrooms = self.classroom_controller.get_all_classrooms()
         if not self.classrooms:
-            label = tk.Label(self.window, text="No hay salones registrados.", font=("Arial", 12))
-            label.pack(pady=20)
+            self.tree.pack_forget()
+            self.show_temporal_message("No hay salones registrados.", color="red")
             return
+
+        self.tree.pack(pady=20, fill="both", expand=True)
         for classroom in self.classrooms:
             self.tree.insert("", "end", values=(classroom.id, classroom.description))
 
     def show_temporal_message(self, texto, color="black"):
-        if hasattr(self, "message_label") and self.message_label.winfo_exists():
+        if self.message_label and self.message_label.winfo_exists():
             self.message_label.destroy()
         self.message_label = tk.Label(self.window, text=texto, fg=color, font=("Arial", 10))
         self.message_label.pack(pady=5)
