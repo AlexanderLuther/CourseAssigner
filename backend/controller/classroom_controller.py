@@ -1,5 +1,5 @@
 from backend.Exception.HellException import HellException
-from backend.db.model.ClassroomModel import ClassroomModel
+from backend.db.model.classroom_model import ClassroomModel
 from backend.db.query.classroom_query import ClassroomQuery
 
 class ClassroomController:

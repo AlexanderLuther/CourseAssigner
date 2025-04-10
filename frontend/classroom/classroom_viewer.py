@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from backend.Exception.HellException import HellException
-from backend.controller.ClassroomController import ClassroomController
+from backend.controller.classroom_controller import ClassroomController
 
 class ClassroomViewer:
     def __init__(self, parent):

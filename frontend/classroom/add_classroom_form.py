@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from backend.Exception.HellException import HellException
-from backend.controller.ClassroomController import ClassroomController
+from backend.controller.classroom_controller import ClassroomController
 
 class AddClassroomForm:
     def __init__(self, parent):

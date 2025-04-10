@@ -1,13 +1,13 @@
 from backend.db.connection.database_connection import DatabaseSession
-from backend.db.model.time_model import TimeModel
+from backend.db.model.course_type_model import CourseTypeModel
 
-class TimeQuery:
+class CourseTypeQuery:
     def __init__(self):
         self.db_session = DatabaseSession.get_session()
 
-    def find_all_times(self):
+    def find_all_course_types(self):
         return (
             self.db_session
-                .query(TimeModel)
+                .query(CourseTypeModel)
                 .all()
         )

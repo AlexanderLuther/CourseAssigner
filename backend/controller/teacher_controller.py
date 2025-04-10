@@ -1,5 +1,5 @@
 from backend.Exception.HellException import HellException
-from backend.db.model.TeacherModel import TeacherModel
+from backend.db.model.teacher_model import TeacherModel
 from backend.db.query.TeacherQuery import TeacherQuery
 
 class TeacherController:
@@ -7,8 +7,8 @@ class TeacherController:
         self.teacher_query = TeacherQuery()
 
     def save_teacher(self, id, name, entry_time, departure_time):
-        tempTeacher = self.teacher_query.find_teacher_by_id(id)
-        if tempTeacher:
+        temp_teacher = self.teacher_query.find_teacher_by_id(id)
+        if temp_teacher:
             raise HellException(f"El Docente con registro {id} ya se encuentra registrado.")
         self.teacher_query.save_teacher(
             TeacherModel(

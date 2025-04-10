@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 from backend.Exception.HellException import HellException
-from backend.controller.TeacherController import TeacherController
-from backend.controller.TimeController import TimeController
+from backend.controller.teacher_controller import TeacherController
+from backend.controller.time_controller import TimeController
 
 class AddTeacherForm:
     def __init__(self, parent):

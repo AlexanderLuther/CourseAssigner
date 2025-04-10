@@ -1,5 +1,5 @@
 from backend.db.connection.database_connection import DatabaseSession
-from backend.db.model.ClassroomModel import ClassroomModel
+from backend.db.model.classroom_model import ClassroomModel
 
 class ClassroomQuery:
 

@@ -1,5 +1,5 @@
 from backend.db.connection.database_connection import DatabaseSession
-from backend.db.model.TeacherModel import TeacherModel
+from backend.db.model.teacher_model import TeacherModel
 
 class TeacherQuery:
     def __init__(self):

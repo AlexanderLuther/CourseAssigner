@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from backend.controller.TeacherController import TeacherController
+from backend.controller.teacher_controller import TeacherController
 from datetime import datetime
-from backend.controller.TimeController import TimeController
+from backend.controller.time_controller import TimeController
 
 class TeacherViewer:
     def __init__(self, parent):
