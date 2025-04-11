@@ -2,12 +2,6 @@ from backend.db.connection.database_connection import DatabaseSession
 from backend.db.model.time_model import TimeModel
 
 class TimeQuery:
-    def __init__(self):
-        self.db_session = DatabaseSession.get_session()
-
     def find_all_times(self):
-        return (
-            self.db_session
-                .query(TimeModel)
-                .all()
-        )
+        with DatabaseSession.get_session() as session:
+            return session.query(TimeModel).all()

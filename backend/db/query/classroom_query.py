@@ -3,33 +3,29 @@ from backend.db.model.classroom_model import ClassroomModel
 
 class ClassroomQuery:
 
-    def __init__(self):
-        self.db_session = DatabaseSession.get_session()
-
     def save_classroom(self, classroom: ClassroomModel):
-        self.db_session.add(classroom)
-        self.db_session.commit()
-        pass
+        with DatabaseSession.get_session() as session:
+            session.add(classroom)
+            session.commit()
 
     def update_classroom(self, classroom: ClassroomModel):
-        self.db_session.merge(classroom)
-        self.db_session.commit()
+        with DatabaseSession.get_session() as session:
+            session.merge(classroom)
+            session.commit()
 
     def find_classroom_by_description(self, description: str):
-        return (
-            self.db_session
-                .query(ClassroomModel)
+        with DatabaseSession.get_session() as session:
+            return (
+                session.query(ClassroomModel)
                 .filter(ClassroomModel.description == description)
                 .first()
-        )
+            )
 
     def find_all_classrooms(self):
-        return (
-            self.db_session
-                .query(ClassroomModel)
-                .all()
-        )
+        with DatabaseSession.get_session() as session:
+            return session.query(ClassroomModel).all()
 
     def delete_classroom(self, id: int):
-        self.db_session.query(ClassroomModel).filter(ClassroomModel.id == id).delete()
-        self.db_session.commit()
+        with DatabaseSession.get_session() as session:
+            session.query(ClassroomModel).filter(ClassroomModel.id == id).delete()
+            session.commit()

@@ -25,6 +25,9 @@ class CourseController:
     def find_all_courses(self):
         return self.course_query.find_all_courses()
 
+    def find_course_by_code(self, code: str):
+        return self.course_query.find_course_by_code(code)
+
     def update_course(self, code, name, id_career, id_semester, id_section, id_course_type):
         self.course_query.update_course(
             CourseModel(
