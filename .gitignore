@@ -1,0 +1,12 @@
+# Ignorar todos los archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Ignorar archivos de caché en subdirectorios
+**/__pycache__/
+**/*.pyc
+
+# Ignorar el archivo de log generado
+importacion_cursos.txt
+importacion_docentes.txt
+

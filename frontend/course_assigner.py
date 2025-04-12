@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 from backend.Exception.HellException import HellException
-from backend.controller.course_import_controller import FileController
+from backend.controller.course_file_controller import CourseFileController
+from backend.controller.teacher_file_controller import TeacherFileController
 from frontend.classroom.add_classroom_form import AddClassroomForm
 from frontend.classroom.classroom_viewer import ClassroomViewer
 from frontend.course.add_course_form import AddCourseForm
@@ -16,7 +17,8 @@ class CourseAssigner:
         self.parent = parent
         self.parent.title("Asignador de Cursos")
         self.parent.geometry("700x600")
-        self.file_controller = FileController()
+        self.file_course_controller = CourseFileController()
+        self.file_teacher_controller = TeacherFileController()
         self.create_menu()
         self.parent.mainloop()
 
@@ -26,7 +28,7 @@ class CourseAssigner:
 
         # File Menu
         file_menu = tk.Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Importar Docentes", command=lambda: self.nueva_ventana("Cursos"))
+        file_menu.add_command(label="Importar Docentes", command=self.import_teachers)
         file_menu.add_command(label="Importar Cursos", command=self.import_courses)
         file_menu.add_command(label="Importar Relacion Docente-Curso", command=lambda: self.nueva_ventana("Cursos"))
         menu_bar.add_cascade(label="Archivo", menu=file_menu)
@@ -63,7 +65,7 @@ class CourseAssigner:
         try:
             file_path = self.get_file_path()
             if file_path:
-                has_errors = self.file_controller.read_course_file(file_path)
+                has_errors = self.file_course_controller.read_course_file(file_path)
                 if has_errors:
                     LogViewer(self.parent, 'importacion_cursos.txt')
                 else:
@@ -71,6 +73,19 @@ class CourseAssigner:
         except HellException as e:
             messagebox.showerror("Error al importar cursos", str(e))
         except Exception as e:
-            # Por si ocurre cualquier otro error no previsto
+            messagebox.showerror("Error inesperado", str(e))
+
+    def import_teachers(self):
+        try:
+            file_path = self.get_file_path()
+            if file_path:
+                has_errors = self.file_teacher_controller.read_teacher_file(file_path)
+                if has_errors:
+                    LogViewer(self.parent, 'importacion_docentes.txt')
+                else:
+                    messagebox.showinfo("Docentes importados correctamente", "Los docentes se han importado correctamente.")
+        except HellException as e:
+            messagebox.showerror("Error al importar docentes", str(e))
+        except Exception as e:
             messagebox.showerror("Error inesperado", str(e))
 

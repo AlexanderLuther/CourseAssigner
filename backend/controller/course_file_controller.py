@@ -1,5 +1,4 @@
 import os
-import math
 import unicodedata
 import pandas as pd
 from backend.controller.course_type_controller import CourseTypeController
@@ -14,7 +13,7 @@ def write_log(message: str):
     with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(message + '\n')
 
-class FileController:
+class CourseFileController:
 
     def __init__(self):
         self.course_controller = CourseController()
@@ -119,14 +118,14 @@ class FileController:
         for value in course.values():
             if value is None:
                 return False
-            if isinstance(value, float) and math.isnan(value):
+            if isinstance(value, float) and pd.isna(value):
                 return False
             if isinstance(value, str) and value.strip() == "":
                 return False
         return True
 
     def is_valid_course_type(self, type: str):
-        return type.strip().lower() in ["obligatorio", "opcional"]
+        return type.strip().lower() in ["obligatorio", "optativo"]
 
     def is_valid_semester(self, semester: int):
         return 1 <= semester <= 10

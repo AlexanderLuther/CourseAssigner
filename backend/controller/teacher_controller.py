@@ -19,6 +19,9 @@ class TeacherController:
             )
         )
 
+    def find_teacher_by_id(self, id: str):
+        return self.teacher_query.find_teacher_by_id(id)
+
     def update_teacher(self, id, name, entry_time, departure_time):
         self.teacher_query.update_teacher(
             TeacherModel(
