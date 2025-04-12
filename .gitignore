@@ -10,3 +10,6 @@ __pycache__/
 importacion_cursos.txt
 importacion_docentes.txt
 
+# Ignorar carpeta de PyCharm
+.idea
+
