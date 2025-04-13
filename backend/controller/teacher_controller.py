@@ -32,7 +32,7 @@ class TeacherController:
             )
         )
 
-    def get_all_teachers(self):
+    def find_all_teachers(self):
         return self.teacher_query.find_all_teachers()
 
     def delete_teacher(self, id: str):

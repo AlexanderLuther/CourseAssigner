@@ -28,7 +28,7 @@ class TeacherViewer:
         return list(time_map.keys())
 
     def init_table(self):
-        self.teachers = self.teacher_controller.get_all_teachers()
+        self.teachers = self.teacher_controller.find_all_teachers()
         if not self.teachers:
             self.show_temporal_message("No hay docentes registrados.", color="red")
             return
@@ -173,7 +173,7 @@ class TeacherViewer:
         if not self.tree:
             return
         self.tree.delete(*self.tree.get_children())
-        self.teachers = self.teacher_controller.get_all_teachers()
+        self.teachers = self.teacher_controller.find_all_teachers()
         if not self.teachers:
             self.tree.pack_forget()
             self.show_temporal_message("No hay docentes registrados.", color="red")

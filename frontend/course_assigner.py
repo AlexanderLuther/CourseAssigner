@@ -9,6 +9,7 @@ from frontend.classroom.add_classroom_form import AddClassroomForm
 from frontend.classroom.classroom_viewer import ClassroomViewer
 from frontend.course.add_course_form import AddCourseForm
 from frontend.course.course_viewer import CourseViewer
+from frontend.genetic_algorithm.genetic_algorithm_setup import GeneticAlgorithmSetup
 from frontend.log_viewer import LogViewer
 from frontend.teacher.teacher_viewer import TeacherViewer
 from frontend.teacher.add_teacher_form import AddTeacherForm
@@ -58,6 +59,11 @@ class CourseAssigner:
         classroom_menu = tk.Menu(menu_bar, tearoff=0)
         classroom_menu.add_command(label="Ver Relaciones Docente-Curso", command=lambda: AssignmentViewer(self.parent, self.teacher_course_assignments))
         menu_bar.add_cascade(label="Docente-Curso", menu=classroom_menu)
+
+        # Generator Menu
+        classroom_menu = tk.Menu(menu_bar, tearoff=0)
+        classroom_menu.add_command(label="Nuevo Horario", command=lambda:GeneticAlgorithmSetup(self.parent, self.teacher_course_assignments))
+        menu_bar.add_cascade(label="Generar", menu=classroom_menu)
 
     def get_file_path(self, title):
         file = filedialog.askopenfilename(

@@ -34,7 +34,7 @@ class TeacherCourseFileController:
             if data.empty:
                 raise HellException("El archivo está vacío o no se pudo interpretar correctamente.")
 
-            teachers = {str(t.id): t for t in self.teacher_controller.get_all_teachers()}
+            teachers = {str(t.id): t for t in self.teacher_controller.find_all_teachers()}
             courses = {str(c.code): c for c in self.course_controller.find_all_courses()}
 
             for index, row in data.iterrows():
