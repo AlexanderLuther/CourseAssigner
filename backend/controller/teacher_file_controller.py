@@ -29,7 +29,7 @@ class TeacherFileController:
                 delimiter=',',
                 encoding='utf-8',
                 header=None,
-                names=["id", "name", "entry_time", "departure_time"]
+                names=["name", "id", "entry_time", "departure_time"]
             )
             if teachers.empty:
                 raise HellException("El archivo está vacío o no se pudo interpretar correctamente.")
