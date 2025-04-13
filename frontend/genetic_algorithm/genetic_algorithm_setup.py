@@ -190,7 +190,7 @@ class GeneticAlgorithmSetup(tk.Toplevel):
             courses,
             self.assignments,
             self.period_controller.get_all_periods(),
-            criteria == "Número de Generaciones",
             population,
+            criteria == "Número de Generaciones",
             criteria_val
         )
