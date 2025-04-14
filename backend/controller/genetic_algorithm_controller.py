@@ -84,7 +84,6 @@ class GeneticAlgorithmController:
             ]
 
         self.pdf_generator.export_schedule_to_pdf(
-            filename="schedule.pdf",
             best_chromosome=best_chromosome,
             periods=periods,
             classrooms=classrooms,

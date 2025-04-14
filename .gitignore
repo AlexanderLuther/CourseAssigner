@@ -10,6 +10,10 @@ __pycache__/
 importacion_cursos.txt
 importacion_docentes.txt
 
+# Ignorar horario generado
+schedule.pdf
+
 # Ignorar carpeta de PyCharm
 .idea
+
 

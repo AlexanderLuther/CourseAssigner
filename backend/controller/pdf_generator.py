@@ -13,7 +13,6 @@ from backend.db.model.course_model import CourseModel
 from backend.db.model.period_model import PeriodModel
 from backend.db.model.teacher_model import TeacherModel
 
-
 class PDFGenerator:
 
     def __init__(self):
@@ -26,17 +25,18 @@ class PDFGenerator:
 
     def export_schedule_to_pdf(
         self,
-        filename: str,
         best_chromosome: list[dict],
         periods: list[PeriodModel],
         classrooms: list[ClassroomModel],
         teachers: dict[str, TeacherModel],
-        courses: dict[str, CourseModel]
+        courses: dict[str, CourseModel],
+        filename="schedule.pdf",
     ):
+        # Order periods and classrooms
         sorted_periods = sorted(periods, key=lambda p: p.start_time)
         sorted_classrooms = sorted(classrooms, key=lambda c: c.id)
 
-        # Documento en A2 apaisado
+        # Create PDF document with the provided data.
         doc = SimpleDocTemplate(
             filename,
             pagesize=landscape(A3),
@@ -47,7 +47,7 @@ class PDFGenerator:
         )
         usable_width = doc.width
 
-        # Estilo extra compacto
+        # Style
         styles = getSampleStyleSheet()
         normal_style = styles["Normal"]
         normal_style.fontSize = 5
@@ -55,66 +55,41 @@ class PDFGenerator:
         normal_style.spaceAfter = 0
         normal_style.spaceBefore = 0
 
-        # Colores únicos por carrera
-        def generate_color_palette(n):
-            base_colors = [
-                colors.lightblue, colors.lightgreen, colors.lightcoral, colors.khaki,
-                colors.orange, colors.violet, colors.cadetblue, colors.beige,
-                colors.paleturquoise, colors.plum, colors.wheat
-            ]
-            if n <= len(base_colors):
-                return base_colors[:n]
-            else:
-                return [colors.HexColor(f"#{random.randint(0x444444, 0xAAAAAA):06X}") for _ in range(n)]
-
+        # Set a color per career
         career_ids = list({course.id_career for course in courses.values()})
-        career_colors = dict(zip(career_ids, generate_color_palette(len(career_ids))))
+        career_colors = dict(zip(career_ids, self.generate_colors(len(career_ids))))
 
-        # Leyenda de colores
-        legend_data = [["Color", "Carrera"]]
-        for cid in career_ids:
-            legend_data.append(["", self.careers_dict.get(cid, f"Carrera {cid}")])
-        legend_table = Table(legend_data, colWidths=[1.2 * cm, 7 * cm])
-        legend_style = TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
-            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 3.5),
-        ])
-        for i, cid in enumerate(career_ids):
-            legend_style.add("BACKGROUND", (0, i + 1), (0, i + 1), career_colors[cid])
-        legend_table.setStyle(legend_style)
+        # Create color table
+        color_table = self.create_color_table(career_ids, career_colors)
+        elements = [color_table, Spacer(1, 0.2 * cm)]
 
-        elements = [Paragraph("<b>Leyenda de colores por carrera</b>", styles["Heading4"]),
-                    legend_table, Spacer(1, 0.2 * cm)]
-
-        # Tabla principal
-        table_data = [["Periodo / Aula"] + [c.description for c in sorted_classrooms]]
+        # Schedule headers
+        table_data = [["Periodo / Aula"] + [classroom.description for classroom in sorted_classrooms]]
         cell_backgrounds = []
 
+        # Period per row
         for period in sorted_periods:
             row = [f"{period.start_time.strftime('%H:%M')} - {period.end_time.strftime('%H:%M')}"]
 
+            # Add an empty cell per classroom in row
             for classroom in sorted_classrooms:
                 cell = ""
                 bg_color = None
                 for gene in best_chromosome:
+
+                    #Add data to cell if a course is assigned to the classroom
                     if gene["period_id"] == period.id and gene["classroom_id"] == classroom.id:
                         course = courses.get(gene["course_id"])
                         teacher = teachers.get(gene["teacher_id"])
                         if course and teacher:
-                            tipo = "Obligatorio" if course.id_course_type == 1 else "Optativo"
-                            carrera = self.careers_dict.get(course.id_career, f"Carrera {course.id_career}")
-                            seccion = self.sections_dict.get(course.id_section, f"Sección {course.id_section}")
-                            semestre = self.semesters_dict.get(course.id_semester, f"Semestre {course.id_semester}")
-
+                            type = "Obligatorio" if course.id_course_type == 2 else "Optativo"
+                            section = self.sections_dict.get(course.id_section, f"Sección {course.id_section}")
+                            semester = self.semesters_dict.get(course.id_semester, f"Semestre {course.id_semester}")
                             cell = (
                                 f"{course.name}<br/>"
-                                f"{seccion}<br/>"
-                                f"{tipo}<br/>"
-                                f"{semestre}<br/>"
+                                f"{section}<br/>"
+                                f"{type}<br/>"
+                                f"{semester}<br/>"
                                 f"{teacher.name}"
                             )
                             bg_color = career_colors.get(course.id_career, colors.white)
@@ -127,15 +102,17 @@ class PDFGenerator:
 
             table_data.append(row)
 
-        # Cálculo de anchos de columna
+        # Width of each column
         first_col_width = 3 * cm
         remaining_width = usable_width - first_col_width
         num_classrooms = len(sorted_classrooms)
         classroom_col_width = max(1.5 * cm, remaining_width / num_classrooms)
         col_widths = [first_col_width] + [classroom_col_width] * num_classrooms
 
+        # Create schedule
         table = Table(table_data, repeatRows=1, colWidths=col_widths)
 
+        #Schedule style
         table_style = TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
@@ -150,13 +127,48 @@ class PDFGenerator:
             ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
         ])
 
+        # Apply color in each cell
         for bg in cell_backgrounds:
             table_style.add(*bg)
 
+        # Apply schedule style
         table.setStyle(table_style)
+
+        # Add schedule to PDF
         elements.append(table)
 
+        #Build PDF
         doc.build(elements, onFirstPage=self.__add_page_number, onLaterPages=self.__add_page_number)
+
+    def create_color_table(self, career_ids, career_colors):
+        legend_data = [["Color", "Carrera"]]
+        for cid in career_ids:
+            legend_data.append(["", self.careers_dict.get(cid, f"Carrera {cid}")])
+        table = Table(legend_data, colWidths=[1.2 * cm, 7 * cm])
+        legend_style = TableStyle([
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 3.5),
+        ])
+        for i, cid in enumerate(career_ids):
+            legend_style.add("BACKGROUND", (0, i + 1), (0, i + 1), career_colors[cid])
+        table.setStyle(legend_style)
+        return table
+
+    def generate_colors(self, n):
+        base_colors = [
+            colors.lightblue, colors.lightgreen, colors.lightcoral, colors.khaki,
+            colors.orange, colors.violet, colors.cadetblue, colors.beige,
+            colors.paleturquoise, colors.plum, colors.wheat
+        ]
+        if n <= len(base_colors):
+            return base_colors[:n]
+        else:
+            return [colors.HexColor(f"#{random.randint(0x444444, 0xAAAAAA):06X}") for _ in range(n)]
+
 
     def __add_page_number(self, canvas: Canvas, doc):
         canvas.setFont("Helvetica", 4)
