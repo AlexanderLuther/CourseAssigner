@@ -1,4 +1,6 @@
 import random
+import time
+import tracemalloc
 from collections import defaultdict
 from backend.controller.pdf_generator import PDFGenerator
 from backend.db.model.classroom_model import ClassroomModel
@@ -27,11 +29,20 @@ class GeneticAlgorithmController:
             tournament_size,
             no_improve_limit=1000
     ):
+        # Memory usage
+        tracemalloc.start()
+        total_memory_used = 0
+
+        # Execution time
+        start_time = time.time()
+
+        # Algorithm
         best_fitness_ever = float('-inf')
         best_chromosome = None
         generation = 0
         generations_without_improvement = 0
         fitness_history = []
+        conflicts_history = []
 
         teachers_dict = self.__build_teachers_dict(teachers)
         courses_dict = self.__build_courses_dict(courses)
@@ -40,12 +51,22 @@ class GeneticAlgorithmController:
         population = self.generate_initial_population(courses, teachers, periods, classrooms, population_size)
 
         while True:
+            current_mem, _ = tracemalloc.get_traced_memory()
+            total_memory_used += current_mem
             generation += 1
 
             evaluated = self.evaluate_population(population, assignment, teachers_dict, courses_dict, periods_dict)
             evaluated.sort(key=lambda x: x[1], reverse=True)
             current_best_chromosome, current_best_fitness = evaluated[0]
             fitness_history.append(current_best_fitness)
+            conflict_count = self.count_conflicts(
+                current_best_chromosome,
+                assignment,
+                teachers_dict,
+                courses_dict,
+                periods_dict
+            )
+            conflicts_history.append(conflict_count)
 
             if current_best_fitness > best_fitness_ever:
                 best_fitness_ever = current_best_fitness
@@ -83,6 +104,14 @@ class GeneticAlgorithmController:
                 for chromo in next_generation
             ]
 
+        # Calculate Execution time
+        end_time = time.time()
+        execution_time = end_time - start_time
+
+        # Calculate memory usage
+        tracemalloc.stop()
+
+        # Call to create Schedule
         self.pdf_generator.export_schedule_to_pdf(
             best_chromosome=best_chromosome,
             periods=periods,
@@ -90,6 +119,17 @@ class GeneticAlgorithmController:
             teachers=teachers_dict,
             courses=courses_dict
         )
+
+        # Call to create statistics PDF
+        self.pdf_generator.export_execution_summary(
+            execution_time=execution_time,
+            total_generations=generation,
+            base_fitness=len(best_chromosome) * 10,
+            best_fitness=best_fitness_ever,
+            total_memory=total_memory_used,
+            conflicts_history=conflicts_history
+        )
+
         return best_chromosome, best_fitness_ever, generation, fitness_history
 
 
@@ -390,6 +430,58 @@ class GeneticAlgorithmController:
             else:
                 mutated.append(gene)
         return mutated
+
+    def count_conflicts(
+            self,
+            chromosome,
+            assignment,
+            teachers: dict[str, TeacherModel],
+            courses: dict[str, CourseModel],
+            periods: dict[str, PeriodModel]
+    ) -> int:
+        conflicts = 0
+        teacher_schedule = defaultdict(set)
+        classroom_schedule = defaultdict(set)
+        required_courses = defaultdict(set)
+
+        for gene in chromosome:
+            course_id = gene["course_id"]
+            teacher_id = gene["teacher_id"]
+            period_id = int(gene["period_id"])
+            classroom_id = int(gene["classroom_id"])
+
+            course = courses.get(course_id)
+            teacher = teachers.get(teacher_id)
+            period = periods.get(str(period_id))
+
+            if not course or not teacher or not period:
+                conflicts += 1
+                continue
+
+            if not any(c.code == course_id for c in assignment.get(teacher_id, {}).get("courses", [])):
+                conflicts += 1
+
+            if period.start_time < teacher.entry_time or period.end_time > teacher.departure_time:
+                conflicts += 1
+
+            if period_id in teacher_schedule[teacher_id]:
+                conflicts += 1
+            else:
+                teacher_schedule[teacher_id].add(period_id)
+
+            if period_id in classroom_schedule[classroom_id]:
+                conflicts += 1
+            else:
+                classroom_schedule[classroom_id].add(period_id)
+
+            if course.id_course_type == 2:
+                key = (course.id_career, course.id_semester)
+                if period_id in required_courses[key]:
+                    conflicts += 1
+                else:
+                    required_courses[key].add(period_id)
+
+        return conflicts
 
     def __build_teachers_dict(self, teachers: list[TeacherModel]):
         return {teacher.id: teacher for teacher in teachers}

@@ -200,8 +200,8 @@ class GeneticAlgorithmSetup(tk.Toplevel):
             stop_by_generation=bool(criteria == "Número de Generaciones"),
             max_generations=criteria_val,
             target_fitness=criteria_val,
-            mutation_rate=0.3,
-            tournament_size=5
+            mutation_rate=0.1,
+            tournament_size=3
         )
 
         plt.plot(fitness_history, marker='o')
