@@ -200,7 +200,7 @@ class GeneticAlgorithmSetup(tk.Toplevel):
             stop_by_generation=bool(criteria == "Número de Generaciones"),
             max_generations=criteria_val,
             target_fitness=criteria_val,
-            mutation_rate=0.1,
+            mutation_rate=0.4,
             tournament_size=3
         )
 

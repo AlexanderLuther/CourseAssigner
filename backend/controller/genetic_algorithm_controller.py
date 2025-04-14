@@ -27,7 +27,7 @@ class GeneticAlgorithmController:
             target_fitness,
             mutation_rate,
             tournament_size,
-            no_improve_limit=1000
+            no_improve_limit=500
     ):
         # Memory usage
         tracemalloc.start()
@@ -37,6 +37,7 @@ class GeneticAlgorithmController:
         start_time = time.time()
 
         # Algorithm
+        ideal_fitness = len(courses) * 20
         best_fitness_ever = float('-inf')
         best_chromosome = None
         generation = 0
@@ -55,7 +56,7 @@ class GeneticAlgorithmController:
             total_memory_used += current_mem
             generation += 1
 
-            evaluated = self.evaluate_population(population, assignment, teachers_dict, courses_dict, periods_dict)
+            evaluated = self.evaluate_population(ideal_fitness, population, assignment, teachers_dict, courses_dict, periods_dict)
             evaluated.sort(key=lambda x: x[1], reverse=True)
             current_best_chromosome, current_best_fitness = evaluated[0]
             fitness_history.append(current_best_fitness)
@@ -79,11 +80,12 @@ class GeneticAlgorithmController:
                 if generation >= max_generations:
                     break
             else:
-                percent = (current_best_fitness / best_fitness_ever) * 100 if best_fitness_ever > 0 else 0
+                percent = (current_best_fitness / ideal_fitness) * 100
                 if percent >= target_fitness or generations_without_improvement >= no_improve_limit:
                     break
 
             selected = self.tournament_selection(
+                ideal_fitness,
                 population,
                 assignment,
                 teachers_dict,
@@ -124,9 +126,10 @@ class GeneticAlgorithmController:
         self.pdf_generator.export_execution_summary(
             execution_time=execution_time,
             total_generations=generation,
-            base_fitness=len(best_chromosome) * 10,
+            base_fitness=ideal_fitness,
             best_fitness=best_fitness_ever,
             total_memory=total_memory_used,
+            optimal_aptitude_percentage=(best_fitness_ever / ideal_fitness) * 100,
             conflicts_history=conflicts_history
         )
 
@@ -185,6 +188,7 @@ class GeneticAlgorithmController:
 
     def evaluate_population(
             self,
+            base_score,
             population,
             assignment,
             teachers: dict[str, TeacherModel],
@@ -214,6 +218,7 @@ class GeneticAlgorithmController:
         evaluated = []
         for chromo in population:
             fitness = self.evaluate_fitness(
+                base_score,
                 chromo,
                 assignment,
                 teachers,
@@ -225,6 +230,7 @@ class GeneticAlgorithmController:
 
     def evaluate_fitness(
             self,
+            base_score,
             chromosome,
             assignment,
             teachers: dict[str, TeacherModel],
@@ -260,7 +266,6 @@ class GeneticAlgorithmController:
             The calculated fitness score as an integer, representing the suitability of the given chromosome
             based on the constraints and penalties applied.
         """
-        base_score = len(chromosome) * 10
         fitness = 0
         penalty = 0
 
@@ -316,12 +321,13 @@ class GeneticAlgorithmController:
             sorted_periods = sorted(periods_in_use)
             for i in range(len(sorted_periods) - 1):
                 if sorted_periods[i + 1] - sorted_periods[i] == 1:
-                    fitness += 20
+                    fitness += 10
 
         return base_score + fitness - penalty
 
     def tournament_selection(
             self,
+            base_score,
             population,
             assignments,
             teachers: dict[str, TeacherModel],
@@ -355,7 +361,7 @@ class GeneticAlgorithmController:
             best = max(
                 tournament,
                 key=lambda chromosome: self.evaluate_fitness(
-                    chromosome, assignments, teachers, courses, periods
+                    base_score, chromosome, assignments, teachers, courses, periods
                 )
             )
             selected.append(best)

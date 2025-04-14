@@ -182,6 +182,7 @@ class PDFGenerator:
             base_fitness: int,
             best_fitness: int,
             total_memory: float,
+            optimal_aptitude_percentage: float,
             conflicts_history: list[int],
             filename="execution_summary.pdf"
     ):
@@ -208,7 +209,8 @@ class PDFGenerator:
             Paragraph(f"<b>Total de memoria utilizada:</b> {total_memory / 1024:.2f} KB", normal),
             Paragraph(f"<b>Total de generaciones:</b> {total_generations}", normal),
             Paragraph(f"<b>Valor de aptitud base:</b> {base_fitness}", normal),
-            Paragraph(f"<b>Mejor valor de aptitud:</b> {best_fitness}", normal)
+            Paragraph(f"<b>Mejor valor de aptitud:</b> {best_fitness}", normal),
+            Paragraph(f"<b>Porcentaje de aptitud optima:</b> {optimal_aptitude_percentage:.2f}%", normal),
         ]
 
         # Create and add table of conflicts
@@ -216,7 +218,6 @@ class PDFGenerator:
         elements.append(Spacer(1, 1 * cm))
         elements.append(Paragraph("Conflictos por generación", title))
         elements.append(conflict_table)
-
 
         # Build PDF
         doc.build(elements)
