@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+
+from backend.controller.classroom_controller import ClassroomController
 from backend.controller.course_controller import CourseController
 from backend.controller.genetic_algorithm_controller import GeneticAlgorithmController
 from backend.controller.period_controller import PeriodController
@@ -10,6 +12,7 @@ from backend.controller.section_controller import SectionController
 from backend.controller.semester_controller import SemesterController
 from frontend.genetic_algorithm.course_table_frame import CourseTableFrame
 from frontend.genetic_algorithm.teacher_table_frame import TeacherTableFrame
+import matplotlib.pyplot as plt
 
 class GeneticAlgorithmSetup(tk.Toplevel):
     def __init__(self, master, assignments):
@@ -26,6 +29,7 @@ class GeneticAlgorithmSetup(tk.Toplevel):
         self.career_controller = CareerController()
         self.semester_controller = SemesterController()
         self.course_type_controller = CourseTypeController()
+        self.classroom_controller = ClassroomController()
 
         # Maps
         self.section_map = self.get_section_map()
@@ -185,12 +189,25 @@ class GeneticAlgorithmSetup(tk.Toplevel):
                 return
 
         # Start genetic algorithm
-        GeneticAlgorithmController(
-            teachers,
-            courses,
-            self.assignments,
-            self.period_controller.get_all_periods(),
-            population,
-            criteria == "Número de Generaciones",
-            criteria_val
+        genetic_algorithm_controller = GeneticAlgorithmController()
+        chromosome, fitness, generation, fitness_history = genetic_algorithm_controller.run_genetic_algorithm(
+            courses=courses,
+            teachers=teachers,
+            periods=self.period_controller.get_all_periods(),
+            assignment=self.assignments,
+            classrooms=self.classroom_controller.get_all_classrooms(),
+            population_size=population,
+            stop_by_generation=bool(criteria == "Número de Generaciones"),
+            max_generations=criteria_val,
+            target_fitness=criteria_val,
+            mutation_rate=0.3,
+            tournament_size=5
         )
+
+        plt.plot(fitness_history, marker='o')
+        plt.title("Evolución del Fitness")
+        plt.xlabel("Generación")
+        plt.ylabel("Mejor Fitness")
+        plt.grid(True)
+        plt.show()
+
