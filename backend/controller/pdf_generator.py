@@ -5,7 +5,9 @@ from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.pdfgen.canvas import Canvas
 import random
-
+from backend.controller.career_controller import CareerController
+from backend.controller.section_controller import SectionController
+from backend.controller.semester_controller import SemesterController
 from backend.db.model.classroom_model import ClassroomModel
 from backend.db.model.course_model import CourseModel
 from backend.db.model.period_model import PeriodModel
@@ -13,7 +15,14 @@ from backend.db.model.teacher_model import TeacherModel
 
 
 class PDFGenerator:
-    pass
+
+    def __init__(self):
+        career_controller = CareerController()
+        semester_controller = SemesterController()
+        section_controller = SectionController()
+        self.careers_dict = {c.id: c.description for c in career_controller.get_all_careers()}
+        self.sections_dict = {s.id: s.description for s in section_controller.get_all_sections()}
+        self.semesters_dict = {s.id: s.description for s in semester_controller.get_all_semesters()}
 
     def export_schedule_to_pdf(
         self,
@@ -22,10 +31,7 @@ class PDFGenerator:
         periods: list[PeriodModel],
         classrooms: list[ClassroomModel],
         teachers: dict[str, TeacherModel],
-        courses: dict[str, CourseModel],
-        careers: dict[int, str],
-        sections: dict[int, str],
-        semesters: dict[int, str]
+        courses: dict[str, CourseModel]
     ):
         sorted_periods = sorted(periods, key=lambda p: p.start_time)
         sorted_classrooms = sorted(classrooms, key=lambda c: c.id)
@@ -67,7 +73,7 @@ class PDFGenerator:
         # Leyenda de colores
         legend_data = [["Color", "Carrera"]]
         for cid in career_ids:
-            legend_data.append(["", careers.get(cid, f"Carrera {cid}")])
+            legend_data.append(["", self.careers_dict.get(cid, f"Carrera {cid}")])
         legend_table = Table(legend_data, colWidths=[1.2 * cm, 7 * cm])
         legend_style = TableStyle([
             ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
@@ -100,9 +106,9 @@ class PDFGenerator:
                         teacher = teachers.get(gene["teacher_id"])
                         if course and teacher:
                             tipo = "Obligatorio" if course.id_course_type == 1 else "Optativo"
-                            carrera = careers.get(course.id_career, f"Carrera {course.id_career}")
-                            seccion = sections.get(course.id_section, f"Sección {course.id_section}")
-                            semestre = semesters.get(course.id_semester, f"Semestre {course.id_semester}")
+                            carrera = self.careers_dict.get(course.id_career, f"Carrera {course.id_career}")
+                            seccion = self.sections_dict.get(course.id_section, f"Sección {course.id_section}")
+                            semestre = self.semesters_dict.get(course.id_semester, f"Semestre {course.id_semester}")
 
                             cell = (
                                 f"{course.name}<br/>"

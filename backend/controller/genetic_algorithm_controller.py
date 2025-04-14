@@ -1,9 +1,6 @@
 import random
 from collections import defaultdict
-from backend.controller.career_controller import CareerController
 from backend.controller.pdf_generator import PDFGenerator
-from backend.controller.section_controller import SectionController
-from backend.controller.semester_controller import SemesterController
 from backend.db.model.classroom_model import ClassroomModel
 from backend.db.model.course_model import CourseModel
 from backend.db.model.period_model import PeriodModel
@@ -12,12 +9,6 @@ from backend.db.model.teacher_model import TeacherModel
 class GeneticAlgorithmController:
 
     def __init__(self):
-        career_controller = CareerController()
-        semester_controller = SemesterController()
-        section_controller = SectionController()
-        self.careers_dict = {c.id: c.description for c in career_controller.get_all_careers()}
-        self.sections_dict = {s.id: s.description for s in section_controller.get_all_sections()}
-        self.semesters_dict = {s.id: s.description for s in semester_controller.get_all_semesters()}
         self.pdf_generator = PDFGenerator()
         pass
 
@@ -98,10 +89,7 @@ class GeneticAlgorithmController:
             periods=periods,
             classrooms=classrooms,
             teachers=teachers_dict,
-            courses=courses_dict,
-            careers=self.careers_dict,
-            sections=self.sections_dict,
-            semesters=self.semesters_dict
+            courses=courses_dict
         )
         return best_chromosome, best_fitness_ever, generation, fitness_history
 
