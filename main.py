@@ -6,7 +6,7 @@ if __name__ == "__main__":
     # Database
     DatabaseSession.initialize(
         user='root',
-        password='Xela0806.',
+        password='********.',
         host='localhost',
         db_name='COURSE_ASSIGNER'
     )
